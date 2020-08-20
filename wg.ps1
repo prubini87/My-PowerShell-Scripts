@@ -1,7 +1,7 @@
 # Custom WinGet
 Function CustomWinGet {
-    $Instruction = $args[0]
-    $PackageName = $args[1]
+    $Command = $args[0]
+    $OtherArguments = if ($args.Length -gt 1) { $args[1..$args.Length] } else { "" }
 
     #available commands
     $Commands = @{
@@ -16,13 +16,16 @@ Function CustomWinGet {
     }
 
     # Translate single letter command
-    $InstructionLength = $Instruction.Length
-    if ($InstructionLength -gt 0) {
-        if ($InstructionLength -eq 1) {
-            if ($Commands.ContainsKey($Instruction)) {
-                Invoke-Expression "winget $($Commands.$Instruction) $PackageName"
+    if ($args.Length -gt 0) {
+        if ($Command.Length -eq 1) {
+            if ($Commands.ContainsKey($Command)) {
+                $Expression = "winget $($Commands.$Command) $OtherArguments"
             }
+        } else {
+            $Expression = "winget $args"
         }
+
+        Invoke-Expression $Expression
     } else {
         # Show custom helper
         $HelperMessage = @'
@@ -32,7 +35,7 @@ All commands below come from "winget" and are currently available:
 '@
         Write-Host $HelperMessage
         $Commands
-    }    
+    }
 }
 
 Set-Alias wg CustomWinGet
